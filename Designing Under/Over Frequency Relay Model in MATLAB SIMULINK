@@ -1,0 +1,154 @@
+https://www.youtube.com/watch?v=MuXlFYP4o_w&list=PLgowgr9LiYjrHLmw_mhA1TzXRaKjZxdP8
+
+Design Under/Over Frequency Relay Model in MATLAB SIMULINK
+
+
+
+-in 3 phase programmable voltage source ,  magnitude of step function, This means how much variation in frequency magnitude do you want to simulate.
+# Explanation of the Transcript: Designing Under/Over Frequency Relay Model in MATLAB SIMULINK
+
+This transcript is from a YouTube tutorial by **Dr. J. A. Laghari** on how to design an **Under/Over Frequency Relay Model** in MATLAB SIMULINK. Below is a structured explanation of the entire process, broken down into key sections.
+
+---
+
+## 1. What is a Frequency Relay?
+
+A **frequency relay** is a protection device that operates when the system frequency deviates from a predetermined value. It is assigned device number **81** according to ANSI/IEEE C37.2 standards.
+
+There are two types:
+
+| Type | ANSI Number | Function |
+|------|-------------|----------|
+| **Under Frequency Relay** | 81U or 81L | Operates when frequency **falls below** a set value |
+| **Over Frequency Relay** | 81O or 81H | Operates when frequency **rises above** a set value |
+
+### Under Frequency Relay
+- Protects transformers and generators when frequency drops below operating frequency.
+- Occurs due to turbine low speed or grid frequency fluctuation.
+- Used for **Under Frequency Load Shedding (UFLS)** to disconnect certain loads to maintain stability.
+- **Two-stage tripping:**
+  - Stage 1: At **48.5 Hz** → Trip signal to **grid circuit breaker**
+  - Stage 2: At **47.5 Hz** → Trip signal to **generator circuit breaker**
+
+### Over Frequency Relay
+- Protects generators from over-speeding of the rotor.
+- **Two-stage tripping:**
+  - Stage 1: At **51.5 Hz** → Trip signal to **grid circuit breaker**
+  - Stage 2: At **52.5 Hz** → Trip signal to **generator circuit breaker**
+
+---
+
+## 2. Model Overview
+
+The SIMULINK model used in this tutorial was originally developed by **Professor Rodney Tan**. The frequency relay block is **not available in the standard MATLAB SIMULINK library** — it is a custom block created by Prof. Rodney Tan.
+
+### Key Blocks in the Model
+
+| Block | Purpose |
+|-------|---------|
+| **Three-Phase Programmable Voltage Source** | Generates the supply voltage with frequency variation |
+| **Three-Phase Measurement (Bus A & Bus B)** | Measures phase voltage at two buses |
+| **Three-Phase Series RLC Load** | Two loads connected at Bus A and Bus B |
+| **Scopes (A & B)** | Display voltage waveforms at Bus A and Bus B |
+| **Frequency Relay Block (81)** | The main protection block (custom-built) |
+| **Circuit Breaker** | Disconnects the load when trip signal is received |
+
+---
+
+## 3. Step-by-Step Design Process
+
+### Step 1: Three-Phase Programmable Voltage Source
+- **Positive sequence voltage amplitude:** 400 V (phase-to-phase line voltage)
+- **Angle:** 0°
+- **Frequency:** 50 Hz
+- **Time variation:** Frequency (selected)
+- **Type of variation:** Step function
+- **Step magnitude:** -3 Hz (for under frequency test) → frequency drops to **47 Hz**
+- **Time variation:** Starts at **0.1 s**, ends at **0.8 s**
+
+### Step 2: Three-Phase Measurement Blocks
+- Named **Bus A** and **Bus B**
+- Measure **phase-to-ground** voltage
+
+### Step 3: Three-Phase Series RLC Load
+- Two loads connected at Bus A and Bus B
+- Same parameter values (400 V, other values chosen randomly)
+- **Load at Bus B is critical** → Under frequency relay is applied here to disconnect it during low frequency
+
+### Step 4: Frequency Relay Block (81)
+- **System frequency:** 50 Hz (can be changed to 60 Hz)
+- **Under/Over frequency setting:** 5% by default (range: 1% to 20%)
+  - 1% = 0.5 Hz variation
+  - 5% = 2.5 Hz variation → relay operates when frequency goes below **47.5 Hz**
+- **Ride through time delay:** 0.2 seconds (time for relay + breaker to disconnect load)
+
+#### Inside the Frequency Relay Block (Subsystem)
+- **PLL (Phase Locked Loop):** Measures frequency
+- **MATLAB Function Block:** Implements the frequency relay logic
+  - Inputs: frequency, limits, time delay
+  - Output: Trip signal (TS)
+  - Adds **20 ms delay** to simulate mechanical relay movement time
+- **Clock** and **Scope** for frequency measurement
+
+### Step 5: Circuit Breaker
+- All three phases initially **closed**
+- **Switching time:** External (waits for trip signal from frequency relay)
+
+---
+
+## 4. Simulation Results
+
+### Case 1: Under Frequency (5% setting, -3 Hz step)
+- Frequency drops to **47 Hz**
+- Relay threshold: **47.5 Hz**
+- Time to reach 47.5 Hz: **0.16 seconds**
+- At **0.8 s**, frequency returns to 50 Hz
+- **Bus A voltage:** Peak voltage ~325 V (RMS 220–230 V)
+- **Bus B voltage:** Relay operated at **0.38–0.39 s** → load disconnected
+- **Comparison:** Calculated time ≈ Simulation time → **accurate**
+
+### Case 2: Under Frequency (2% setting, -1.5 Hz step)
+- Frequency limit changed from 5% to 2% → threshold = **49 Hz**
+- Ride through time delay changed to **0.1 s**
+- Step magnitude: **-1.5 Hz** → frequency drops to **48.5 Hz**
+- Time to reach 49 Hz: **0.131 s**
+- Relay disconnected load at **0.255 s**
+- **Comparison:** Calculated time ≈ Simulation time → **accurate**
+
+### Case 3: Over Frequency (2% setting, +1.5 Hz step)
+- Step magnitude: **+1.5 Hz** → frequency rises to **51.5 Hz**
+- Over frequency relay successfully operated and disconnected the load
+
+---
+
+## 5. Applications
+
+- **Bachelor degree FYP** (Final Year Project)
+- **Master degree research** — Under Frequency Load Shedding (UFLS) schemes
+- **PhD research objectives**
+- Can be integrated into any standard **IEEE model**
+
+---
+
+## 6. Key Takeaways
+
+1. The frequency relay block is **custom-built** (not in standard SIMULINK library).
+2. The model uses a **PLL** to measure frequency.
+3. The **MATLAB function block** implements the relay logic with a **20 ms mechanical delay**.
+4. **Percentage settings** (1%–20%) determine the frequency threshold.
+5. **Ride through time delay** simulates the total disconnection time.
+6. The model works for both **under frequency** and **over frequency** scenarios.
+7. Simulation results closely match **mathematical calculations**.
+
+---
+
+## 7. Common Issues Mentioned in Comments
+
+- **MATLAB version compatibility:** Model designed in **MATLAB 2017a**; older versions (e.g., 2014) may not open the block.
+- **Writeable directory error:** Change current directory to a writeable location outside MATLAB installation area.
+- **Multiple breakers:** For microgrids with many breakers, the relay function code needs modification.
+- **Frequency relay block not opening:** Requires the correct MATLAB version.
+
+
+
+This tutorial provides a complete workflow for designing, simulating, and validating an Under/Over Frequency Relay in MATLAB SIMULINK, making it a valuable resource for power system protection studies.
